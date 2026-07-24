@@ -1,0 +1,50 @@
+{
+  "name": "@chubbyts/chubbyts-oxlint",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Oxlint Configuration for chubbyts libraries / framework / projects.",
+  "keywords": [
+    "chubbyts",
+    "oxlint"
+  ],
+  "author": "Dominik Zogg",
+  "license": "MIT",
+  "repository": "chubbyts/chubbyts-oxlint",
+  "scripts": {
+    "build": "rm -Rf dist && tsc",
+    "cs-fix": "prettier --write src *.json",
+    "cs": "prettier --check src *.json",
+    "lint-fix": "oxlint --fix src",
+    "lint": "oxlint src",
+    "prepare": "pnpm run build"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "tabWidth": 2,
+    "singleQuote": true,
+    "trailingComma": "all"
+  },
+  "files": [
+    "dist",
+    "oxlintrc.json"
+  ],
+  "engines": {
+    "node": "^22.13.0 || >=24"
+  },
+  "peerDependencies": {
+    "oxlint": "^1.75.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "oxlint": "^1.75.0",
+    "prettier": "^3.9.6",
+    "typescript": "^7.0.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "packageManager": "pnpm@11.0.9+sha512.34ce82e6780233cf9cad8685029a8f81d2e06196c5a9bad98879f7424940c6817c4e4524fb7d38b8553ceed48b9758b8ebaf1abd3600c232c4c8cf7366086f38",
+  "dependencies": {
+    "oxc-resolver": "^11.24.2"
+  }
+}
