@@ -1,6 +1,6 @@
 # chubbyts-oxlint
 
-[![CI](https://github.com/chubbyts/chubbyts-oxlint/workflows/CI/badge.svg?branch=master)](https://github.com/chubbyts/chubbyts-oxlint/actions?query=workflow%3ACI)
+[![CI](https://github.com/chubbyts/chubbyts-oxlint/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/chubbyts/chubbyts-oxlint/actions/workflows/ci.yml)
 [![npm-version](https://img.shields.io/npm/v/@chubbyts/chubbyts-oxlint.svg)](https://www.npmjs.com/package/@chubbyts/chubbyts-oxlint)
 
 [![bugs](https://sonarcloud.io/api/project_badges/measure?project=chubbyts_chubbyts-oxlint&metric=bugs)](https://sonarcloud.io/dashboard?id=chubbyts_chubbyts-oxlint)
