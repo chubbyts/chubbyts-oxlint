@@ -1,10 +1,13 @@
 # chubbyts-oxlint
 
 [![CI](https://github.com/chubbyts/chubbyts-oxlint/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/chubbyts/chubbyts-oxlint/actions/workflows/ci.yml)
+[![Coverage Status](https://coveralls.io/repos/github/chubbyts/chubbyts-oxlint/badge.svg?branch=master)](https://coveralls.io/github/chubbyts/chubbyts-oxlint?branch=master)
+[![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fchubbyts%2Fchubbyts-oxlint%2Fmaster)](https://dashboard.stryker-mutator.io/reports/github.com/chubbyts/chubbyts-oxlint/master)
 [![npm-version](https://img.shields.io/npm/v/@chubbyts/chubbyts-oxlint.svg)](https://www.npmjs.com/package/@chubbyts/chubbyts-oxlint)
 
 [![bugs](https://sonarcloud.io/api/project_badges/measure?project=chubbyts_chubbyts-oxlint&metric=bugs)](https://sonarcloud.io/dashboard?id=chubbyts_chubbyts-oxlint)
 [![code_smells](https://sonarcloud.io/api/project_badges/measure?project=chubbyts_chubbyts-oxlint&metric=code_smells)](https://sonarcloud.io/dashboard?id=chubbyts_chubbyts-oxlint)
+[![coverage](https://sonarcloud.io/api/project_badges/measure?project=chubbyts_chubbyts-oxlint&metric=coverage)](https://sonarcloud.io/dashboard?id=chubbyts_chubbyts-oxlint)
 [![duplicated_lines_density](https://sonarcloud.io/api/project_badges/measure?project=chubbyts_chubbyts-oxlint&metric=duplicated_lines_density)](https://sonarcloud.io/dashboard?id=chubbyts_chubbyts-oxlint)
 [![ncloc](https://sonarcloud.io/api/project_badges/measure?project=chubbyts_chubbyts-oxlint&metric=ncloc)](https://sonarcloud.io/dashboard?id=chubbyts_chubbyts-oxlint)
 [![sqale_rating](https://sonarcloud.io/api/project_badges/measure?project=chubbyts_chubbyts-oxlint&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=chubbyts_chubbyts-oxlint)

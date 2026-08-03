@@ -141,7 +141,7 @@ const isTacitWrapper = (wrapper: EsNode, call: EsNode): boolean => {
     return false;
   }
 
-  const params = wrapper.params ?? [];
+  const params = wrapper.params as Array<EsNode>;
   const callArguments = call.arguments ?? [];
 
   if (params.length === 0 || params.length !== callArguments.length || !hasOnlyPlainParams(params)) {

@@ -23,6 +23,7 @@ jobs:
       - run: pnpm install --ignore-scripts
       - run: pnpm build
       - run: pnpm lint
+      - run: pnpm test --run
   node24:
     name: Node 24
     runs-on: ubuntu-24.04
@@ -38,6 +39,14 @@ jobs:
       - run: pnpm build
       - run: pnpm cs
       - run: pnpm lint
+      - run: pnpm test --run --coverage
+      - run: pnpm infection
+        env:
+          STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
+      - name: coveralls.io
+        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: sonarcloud.io
         uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
         env:
@@ -57,3 +66,4 @@ jobs:
       - run: pnpm install --ignore-scripts
       - run: pnpm build
       - run: pnpm lint
+      - run: pnpm test --run

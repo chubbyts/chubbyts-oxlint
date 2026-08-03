@@ -1,0 +1,4 @@
+packageExtensions:
+  '@stryker-mutator/core':
+    dependencies:
+      typescript: ^6.0.3

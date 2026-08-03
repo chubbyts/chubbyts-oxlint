@@ -12,11 +12,13 @@
   "repository": "chubbyts/chubbyts-oxlint",
   "scripts": {
     "build": "rm -Rf dist && tsc",
-    "cs-fix": "prettier --write src *.json",
-    "cs": "prettier --check src *.json",
-    "lint-fix": "oxlint --fix src",
-    "lint": "oxlint src",
-    "prepare": "pnpm run build"
+    "cs-fix": "prettier --write src tests *.json",
+    "cs": "prettier --check src tests *.json",
+    "infection": "stryker run",
+    "lint-fix": "oxlint --fix src tests vitest.config.ts",
+    "lint": "oxlint src tests vitest.config.ts",
+    "prepare": "pnpm run build",
+    "test": "vitest"
   },
   "prettier": {
     "printWidth": 120,
@@ -35,10 +37,15 @@
     "oxlint": "^1.76.0"
   },
   "devDependencies": {
+    "@chubbyts/chubbyts-function-mock": "^2.3.0",
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/vitest-runner": "^9.6.1",
     "@types/node": "^26.1.2",
+    "@vitest/coverage-v8": "^4.1.10",
     "oxlint": "^1.76.0",
     "prettier": "^3.9.6",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
   },
   "publishConfig": {
     "access": "public"
