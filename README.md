@@ -22,7 +22,7 @@ Oxlint Configuration for chubbyts libraries / framework / projects. Provides the
 ## Requirements
 
  * node: 22
- * [oxlint][3]: ^1.75.0 (peer dependency)
+ * [oxlint][3]: ^1.76.0 (peer dependency)
  * [oxc-resolver][4]: ^11.24.2
 
 ## Installation
@@ -30,7 +30,7 @@ Oxlint Configuration for chubbyts libraries / framework / projects. Provides the
 Through [NPM](https://www.npmjs.com) as [@chubbyts/chubbyts-oxlint][1].
 
 ```sh
-npm i -D oxlint @chubbyts/chubbyts-oxlint@^1.0.0
+npm i -D oxlint @chubbyts/chubbyts-oxlint@^1.0.1
 ```
 
 ## Configuration
