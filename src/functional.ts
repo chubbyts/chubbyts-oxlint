@@ -110,59 +110,6 @@ type DeclaredFunction = {
 
 const hasOnlyPlainParams = (params: Array<EsNode>): boolean => params.every((param) => param.type === 'Identifier');
 
-const childNodes = (node: EsNode): Array<EsNode> =>
-  Object.entries(node).flatMap(([key, value]): Array<EsNode> => {
-    if (key === 'parent') {
-      return [];
-    }
-
-    if (Array.isArray(value)) {
-      return value.filter((entry): entry is EsNode => !!entry && typeof entry.type === 'string');
-    }
-
-    if (value && typeof value === 'object' && typeof (value as EsNode).type === 'string') {
-      return [value as EsNode];
-    }
-
-    return [];
-  });
-
-const walk = (node: EsNode, visit: (node: EsNode) => void): void => {
-  visit(node);
-  childNodes(node).forEach((child) => walk(child, visit));
-};
-
-const collectDeclaredFunctions = (program: EsNode): Map<string, DeclaredFunction> => {
-  const declared = new Map<string, DeclaredFunction>();
-
-  const register = (name: string, node: EsNode, params: Array<EsNode>): void => {
-    if (declared.has(name)) {
-      declared.set(name, { node, arity: params.length, plain: false });
-
-      return;
-    }
-
-    declared.set(name, { node, arity: params.length, plain: hasOnlyPlainParams(params) });
-  };
-
-  walk(program, (node) => {
-    if (node.type === 'FunctionDeclaration' && node.id?.type === 'Identifier' && node.body && node.params) {
-      register(node.id.name as string, node, node.params);
-    }
-
-    if (
-      node.type === 'VariableDeclarator' &&
-      node.id?.type === 'Identifier' &&
-      (node.init?.type === 'ArrowFunctionExpression' || node.init?.type === 'FunctionExpression') &&
-      node.init.params
-    ) {
-      register(node.id.name as string, node.init, node.init.params);
-    }
-  });
-
-  return declared;
-};
-
 const wrappedCall = (wrapper: EsNode): EsNode | undefined => {
   if (wrapper.async || wrapper.generator || !wrapper.params) {
     return undefined;
@@ -216,40 +163,67 @@ const preferTacit: Rule = {
         'Suggest using a function directly instead of wrapping it. Syntactic approximation of functional/prefer-tacit from eslint-plugin-functional: only functions declared in the same file with a matching, fixed arity are reported.',
     },
   },
-  create: (context) => ({
-    Program: (program) => {
-      const declared = collectDeclaredFunctions(program);
+  create: (context) => {
+    const declared = new Map<string, DeclaredFunction>();
+    const wrappers = new Map<EsNode, EsNode>();
 
-      walk(program, (node) => {
-        if (node.type !== 'ArrowFunctionExpression' && node.type !== 'FunctionExpression') {
-          return;
+    const register = (name: string, node: EsNode, params: Array<EsNode>): void => {
+      if (declared.has(name)) {
+        declared.set(name, { node, arity: params.length, plain: false });
+
+        return;
+      }
+
+      declared.set(name, { node, arity: params.length, plain: hasOnlyPlainParams(params) });
+    };
+
+    const collectWrapper = (node: EsNode): void => {
+      const call = wrappedCall(node);
+
+      if (call && isTacitWrapper(node, call)) {
+        wrappers.set(node, call);
+      }
+    };
+
+    return {
+      FunctionDeclaration: (node) => {
+        if (node.id?.type === 'Identifier' && node.body && node.params) {
+          register(node.id.name as string, node, node.params);
         }
-
-        const call = wrappedCall(node);
-
-        if (!call || !isTacitWrapper(node, call)) {
-          return;
-        }
-
-        const calleeName = call.callee?.name as string;
-        const declaration = declared.get(calleeName);
-
+      },
+      VariableDeclarator: (node) => {
         if (
-          !declaration ||
-          !declaration.plain ||
-          declaration.node === node ||
-          declaration.arity !== call.arguments?.length
+          node.id?.type === 'Identifier' &&
+          (node.init?.type === 'ArrowFunctionExpression' || node.init?.type === 'FunctionExpression') &&
+          node.init.params
         ) {
-          return;
+          register(node.id.name as string, node.init, node.init.params);
         }
+      },
+      ArrowFunctionExpression: collectWrapper,
+      FunctionExpression: collectWrapper,
+      'Program:exit': () => {
+        wrappers.forEach((call, node) => {
+          const calleeName = call.callee?.name as string;
+          const declaration = declared.get(calleeName);
 
-        context.report({
-          node,
-          message: `This function is equivalent to \`${calleeName}\`. Use it directly instead.`,
+          if (
+            !declaration ||
+            !declaration.plain ||
+            declaration.node === node ||
+            declaration.arity !== call.arguments?.length
+          ) {
+            return;
+          }
+
+          context.report({
+            node,
+            message: `This function is equivalent to \`${calleeName}\`. Use it directly instead.`,
+          });
         });
-      });
-    },
-  }),
+      },
+    };
+  },
 };
 
 const plugin = {
