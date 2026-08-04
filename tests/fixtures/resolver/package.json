@@ -1,0 +1,19 @@
+{
+  "imports": {
+    "#cond-types": {
+      "types": "./cond/types-target.d.ts"
+    },
+    "#cond-import": {
+      "import": "./cond/import-target.mjs"
+    },
+    "#cond-require": {
+      "require": "./cond/require-target.cjs"
+    },
+    "#cond-node": {
+      "node": "./cond/node-target.js"
+    },
+    "#cond-default": {
+      "default": "./cond/default-target.js"
+    }
+  }
+}

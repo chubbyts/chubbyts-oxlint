@@ -1,3 +1,5 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, test } from 'vitest';
@@ -6,7 +8,10 @@ import plugin from '../src/import';
 
 type Report = (descriptor: { node: unknown; message: string }) => void;
 
-const testFilename = join(dirname(fileURLToPath(import.meta.url)), 'import.test.ts');
+const testDirectory = dirname(fileURLToPath(import.meta.url));
+const testFilename = join(testDirectory, 'import.test.ts');
+const resolverFixtureFilename = join(testDirectory, 'fixtures', 'resolver', 'entry.ts');
+const tsconfigProjectFilename = join(testDirectory, 'fixtures', 'tsconfig-project', 'src', 'entry.ts');
 
 const withSource = (type: string, value: string): { type: string; source: { type: string; value: string } } => ({
   type,
@@ -20,7 +25,7 @@ describe('import', () => {
   });
 
   describe('no-unresolved', () => {
-    const rule = plugin.rules['no-unresolved'];
+    const rule = { ...plugin.rules }['no-unresolved'];
 
     test('meta', () => {
       expect(rule.meta).toEqual({
@@ -42,6 +47,100 @@ describe('import', () => {
       handlers.ImportDeclaration(withSource('ImportDeclaration', '../src/functional.js'));
       handlers.ImportExpression(withSource('ImportExpression', '../src/import.js'));
       handlers.ExportAllDeclaration(withSource('ExportAllDeclaration', 'node:path'));
+
+      expect(reportMocks).toHaveLength(0);
+    });
+
+    test('ignores sources resolvable via each configured extension', () => {
+      const [report, reportMocks] = useFunctionMock<Report>([]);
+
+      const handlers = rule.create({ filename: resolverFixtureFilename, report });
+
+      ['./ext-ts', './ext-tsx', './ext-dts', './ext-js', './ext-jsx', './ext-json', './ext-node'].forEach((source) => {
+        handlers.ImportDeclaration(withSource('ImportDeclaration', source));
+      });
+
+      expect(reportMocks).toHaveLength(0);
+    });
+
+    test('ignores sources resolvable via each configured extension alias', () => {
+      const [report, reportMocks] = useFunctionMock<Report>([]);
+
+      const handlers = rule.create({ filename: resolverFixtureFilename, report });
+
+      [
+        './aliasjs-ts.js',
+        './aliasjs-tsx.js',
+        './aliasjs-dts.js',
+        './aliasjs-js.js',
+        './aliasjsx-tsx.jsx',
+        './aliasjsx-dts.jsx',
+        './aliasjsx-jsx.jsx',
+        './aliasmjs-mts.mjs',
+        './aliasmjs-dmts.mjs',
+        './aliasmjs-mjs.mjs',
+        './aliascjs-cts.cjs',
+        './aliascjs-dcts.cjs',
+        './aliascjs-cjs.cjs',
+      ].forEach((source) => {
+        handlers.ImportDeclaration(withSource('ImportDeclaration', source));
+      });
+
+      expect(reportMocks).toHaveLength(0);
+    });
+
+    test('ignores sources resolvable via each configured condition name', () => {
+      const [report, reportMocks] = useFunctionMock<Report>([]);
+
+      const handlers = rule.create({ filename: resolverFixtureFilename, report });
+
+      ['#cond-types', '#cond-import', '#cond-require', '#cond-node', '#cond-default'].forEach((source) => {
+        handlers.ImportDeclaration(withSource('ImportDeclaration', source));
+      });
+
+      expect(reportMocks).toHaveLength(0);
+    });
+
+    test('ignores sources resolvable via each configured main field', () => {
+      const [report, reportMocks] = useFunctionMock<Report>([]);
+
+      const handlers = rule.create({ filename: resolverFixtureFilename, report });
+
+      ['./pkg/main-types', './pkg/main-module', './pkg/main-main'].forEach((source) => {
+        handlers.ImportDeclaration(withSource('ImportDeclaration', source));
+      });
+
+      expect(reportMocks).toHaveLength(0);
+    });
+
+    test('ignores sources resolvable via the paths of the nearest tsconfig', () => {
+      const [report, reportMocks] = useFunctionMock<Report>([]);
+
+      const handlers = rule.create({ filename: tsconfigProjectFilename, report });
+
+      handlers.ImportDeclaration(withSource('ImportDeclaration', '@fixture/target'));
+
+      expect(reportMocks).toHaveLength(0);
+    });
+
+    test('caches tsconfig lookups and resolvers', () => {
+      const base = mkdtempSync(join(tmpdir(), 'chubbyts-oxlint-'));
+      mkdirSync(join(base, 'src'));
+      writeFileSync(
+        join(base, 'tsconfig.json'),
+        JSON.stringify({ compilerOptions: { baseUrl: '.', paths: { '@cached/target': ['./src/target.ts'] } } }),
+      );
+      writeFileSync(join(base, 'src', 'target.ts'), '// fixture\n');
+
+      const [report, reportMocks] = useFunctionMock<Report>([]);
+
+      const handlers = rule.create({ filename: join(base, 'src', 'entry.ts'), report });
+
+      handlers.ImportDeclaration(withSource('ImportDeclaration', '@cached/target'));
+      rmSync(join(base, 'tsconfig.json'));
+      handlers.ImportDeclaration(withSource('ImportDeclaration', '@cached/target'));
+
+      rmSync(base, { recursive: true, force: true });
 
       expect(reportMocks).toHaveLength(0);
     });
@@ -97,7 +196,10 @@ describe('import', () => {
     test('supports missing filename', () => {
       const [report, reportMocks] = useFunctionMock<Report>([]);
 
-      rule.create({ report }).ImportDeclaration(withSource('ImportDeclaration', 'node:fs'));
+      const handlers = rule.create({ report });
+
+      handlers.ImportDeclaration(withSource('ImportDeclaration', 'node:fs'));
+      handlers.ImportDeclaration(withSource('ImportDeclaration', 'vitest'));
 
       expect(reportMocks).toHaveLength(0);
     });
@@ -117,7 +219,7 @@ describe('import', () => {
   });
 
   describe('order', () => {
-    const rule = plugin.rules.order;
+    const rule = { ...plugin.rules }.order;
 
     test('meta', () => {
       expect(rule.meta).toEqual({
@@ -157,6 +259,23 @@ describe('import', () => {
       expect(reportMocks).toHaveLength(0);
     });
 
+    test('ignores index like imports in any order', () => {
+      const [report, reportMocks] = useFunctionMock<Report>([]);
+
+      rule.create({ report }).Program({
+        type: 'Program',
+        body: [
+          withSource('ImportDeclaration', '.'),
+          withSource('ImportDeclaration', './'),
+          withSource('ImportDeclaration', './index'),
+          withSource('ImportDeclaration', './index.js'),
+          withSource('ImportDeclaration', './index.ts'),
+        ],
+      });
+
+      expect(reportMocks).toHaveLength(0);
+    });
+
     test('ignores non import statements and imports without literal source', () => {
       const [report, reportMocks] = useFunctionMock<Report>([]);
 
@@ -164,6 +283,7 @@ describe('import', () => {
         type: 'Program',
         body: [
           { type: 'ExpressionStatement' },
+          withSource('ExpressionStatement', 'vitest'),
           { type: 'ImportDeclaration', source: { type: 'TemplateLiteral' } },
           withSource('ImportDeclaration', 'node:fs'),
         ],
@@ -187,6 +307,34 @@ describe('import', () => {
       ]);
 
       rule.create({ report }).Program({ type: 'Program', body: [siblingImport, builtinImport, externalImport] });
+
+      expect(reportMocks).toHaveLength(0);
+    });
+
+    test('reports builtin import occurring after external import', () => {
+      const externalImport = withSource('ImportDeclaration', 'vitest');
+      const builtinImport = withSource('ImportDeclaration', 'node:fs');
+
+      const [report, reportMocks] = useFunctionMock<Report>([
+        { parameters: [{ node: builtinImport, message: '`node:fs` import should occur before import of `vitest`' }] },
+      ]);
+
+      rule.create({ report }).Program({ type: 'Program', body: [externalImport, builtinImport] });
+
+      expect(reportMocks).toHaveLength(0);
+    });
+
+    test('reports external import occurring after parent import', () => {
+      const parentImport = withSource('ImportDeclaration', '../parent');
+      const externalImport = withSource('ImportDeclaration', 'vitest');
+
+      const [report, reportMocks] = useFunctionMock<Report>([
+        {
+          parameters: [{ node: externalImport, message: '`vitest` import should occur before import of `../parent`' }],
+        },
+      ]);
+
+      rule.create({ report }).Program({ type: 'Program', body: [parentImport, externalImport] });
 
       expect(reportMocks).toHaveLength(0);
     });

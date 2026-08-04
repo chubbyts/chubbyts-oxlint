@@ -1,6 +1,7 @@
 import { isBuiltin } from 'node:module';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { cwd } from 'node:process';
 import { ResolverFactory } from 'oxc-resolver';
 
 type EsNode = {
@@ -29,7 +30,7 @@ const RESOLVER_OPTIONS = {
     '.mjs': ['.mts', '.d.mts', '.mjs'],
     '.cjs': ['.cts', '.d.cts', '.cjs'],
   },
-  conditionNames: ['types', 'import', 'require', 'node', 'default'],
+  conditionNames: ['types', 'import', 'require', 'node'],
   mainFields: ['types', 'module', 'main'],
 };
 
@@ -59,11 +60,10 @@ const findTsconfig = (directory: string): string | undefined => {
   return found;
 };
 
-const resolverByTsconfig = new Map<string, ResolverFactory>();
+const resolverByTsconfig = new Map<string | undefined, ResolverFactory>();
 
 const resolverFor = (tsconfig: string | undefined): ResolverFactory => {
-  const key = tsconfig ?? '';
-  const existing = resolverByTsconfig.get(key);
+  const existing = resolverByTsconfig.get(tsconfig);
 
   if (existing) {
     return existing;
@@ -74,22 +74,24 @@ const resolverFor = (tsconfig: string | undefined): ResolverFactory => {
     ...(tsconfig ? { tsconfig: { configFile: tsconfig, references: 'auto' as const } } : {}),
   });
 
-  resolverByTsconfig.set(key, created);
+  resolverByTsconfig.set(tsconfig, created);
 
   return created;
 };
 
-const resolves = (source: string, filename: string): boolean => {
+const resolves = (source: string, directory: string): boolean => {
   if (isBuiltin(source)) {
     return true;
   }
 
-  const directory = dirname(filename);
-
   return !!resolverFor(findTsconfig(directory)).sync(directory, source).path;
 };
 
-const contextFilename = (context: RuleContext): string => context.filename ?? context.getFilename?.() ?? '';
+const contextDirectory = (context: RuleContext): string => {
+  const filename = context.filename ?? context.getFilename?.();
+
+  return filename ? dirname(filename) : cwd();
+};
 
 const sourceValue = (node: EsNode): string | undefined => {
   const source = node.source;
@@ -117,7 +119,7 @@ const noUnresolved: Rule = {
         return;
       }
 
-      if (!resolves(value, contextFilename(context))) {
+      if (!resolves(value, contextDirectory(context))) {
         context.report({ node: node.source as EsNode, message: `Unable to resolve path to module '${value}'.` });
       }
     };
@@ -164,9 +166,13 @@ const order: Rule = {
   },
   create: (context) => ({
     Program: (program) => {
-      const imports = (program.body ?? []).filter(
-        (node) => node.type === 'ImportDeclaration' && sourceValue(node) !== undefined,
-      );
+      const body = program.body;
+
+      if (!body) {
+        return;
+      }
+
+      const imports = body.filter((node) => node.type === 'ImportDeclaration' && sourceValue(node) !== undefined);
 
       imports.forEach((node, index) => {
         const value = sourceValue(node) as string;

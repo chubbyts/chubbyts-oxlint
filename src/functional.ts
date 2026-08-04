@@ -142,9 +142,9 @@ const isTacitWrapper = (wrapper: EsNode, call: EsNode): boolean => {
   }
 
   const params = wrapper.params as Array<EsNode>;
-  const callArguments = call.arguments ?? [];
+  const callArguments = call.arguments;
 
-  if (params.length === 0 || params.length !== callArguments.length || !hasOnlyPlainParams(params)) {
+  if (!callArguments || params.length === 0 || params.length !== callArguments.length || !hasOnlyPlainParams(params)) {
     return false;
   }
 
@@ -168,13 +168,7 @@ const preferTacit: Rule = {
     const wrappers = new Map<EsNode, EsNode>();
 
     const register = (name: string, node: EsNode, params: Array<EsNode>): void => {
-      if (declared.has(name)) {
-        declared.set(name, { node, arity: params.length, plain: false });
-
-        return;
-      }
-
-      declared.set(name, { node, arity: params.length, plain: hasOnlyPlainParams(params) });
+      declared.set(name, { node, arity: params.length, plain: !declared.has(name) && hasOnlyPlainParams(params) });
     };
 
     const collectWrapper = (node: EsNode): void => {
@@ -211,7 +205,7 @@ const preferTacit: Rule = {
             !declaration ||
             !declaration.plain ||
             declaration.node === node ||
-            declaration.arity !== call.arguments?.length
+            declaration.arity !== (call.arguments as Array<EsNode>).length
           ) {
             return;
           }
