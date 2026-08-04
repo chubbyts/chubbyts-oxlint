@@ -43,7 +43,7 @@ describe('import', () => {
       handlers.ImportExpression(withSource('ImportExpression', '../src/import.js'));
       handlers.ExportAllDeclaration(withSource('ExportAllDeclaration', 'node:path'));
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('reports unresolvable sources', () => {
@@ -62,7 +62,7 @@ describe('import', () => {
       handlers.ImportDeclaration(importNode);
       handlers.ExportNamedDeclaration(exportNode);
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('reports unresolvable source without a surrounding tsconfig', () => {
@@ -76,7 +76,7 @@ describe('import', () => {
 
       handlers.ImportDeclaration(node);
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('supports getFilename as filename fallback', () => {
@@ -90,8 +90,8 @@ describe('import', () => {
 
       rule.create({ getFilename, report }).ImportDeclaration(node);
 
-      expect(getFilenameMocks.length).toBe(0);
-      expect(reportMocks.length).toBe(0);
+      expect(getFilenameMocks).toHaveLength(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('supports missing filename', () => {
@@ -99,7 +99,7 @@ describe('import', () => {
 
       rule.create({ report }).ImportDeclaration(withSource('ImportDeclaration', 'node:fs'));
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('ignores nodes without a usable source', () => {
@@ -112,7 +112,7 @@ describe('import', () => {
       handlers.ImportDeclaration({ type: 'ImportDeclaration', source: { type: 'TemplateLiteral' } });
       handlers.ImportDeclaration({ type: 'ImportDeclaration', source: { type: 'Literal', value: 1 } });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
   });
 
@@ -134,7 +134,7 @@ describe('import', () => {
 
       rule.create({ report }).Program({ type: 'Program' });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('ignores correctly ordered imports', () => {
@@ -154,7 +154,7 @@ describe('import', () => {
         ],
       });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('ignores non import statements and imports without literal source', () => {
@@ -169,7 +169,7 @@ describe('import', () => {
         ],
       });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('reports imports occurring after imports of a later group', () => {
@@ -188,7 +188,7 @@ describe('import', () => {
 
       rule.create({ report }).Program({ type: 'Program', body: [siblingImport, builtinImport, externalImport] });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
   });
 });

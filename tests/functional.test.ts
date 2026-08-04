@@ -50,7 +50,7 @@ describe('functional', () => {
 
       rule.create({ report }).VariableDeclaration(node);
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('ignores const', () => {
@@ -58,7 +58,7 @@ describe('functional', () => {
 
       rule.create({ report }).VariableDeclaration({ type: 'VariableDeclaration', kind: 'const' });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
   });
 
@@ -77,7 +77,7 @@ describe('functional', () => {
 
       rule.create({ report }).AssignmentExpression(node);
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('ignores assignment to identifier', () => {
@@ -85,7 +85,7 @@ describe('functional', () => {
 
       rule.create({ report }).AssignmentExpression({ type: 'AssignmentExpression', left: identifier('value') });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('reports update of member expression', () => {
@@ -95,7 +95,7 @@ describe('functional', () => {
 
       rule.create({ report }).UpdateExpression(node);
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('ignores update of identifier', () => {
@@ -103,7 +103,7 @@ describe('functional', () => {
 
       rule.create({ report }).UpdateExpression({ type: 'UpdateExpression', argument: identifier('value') });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('reports delete of member expression', () => {
@@ -113,7 +113,7 @@ describe('functional', () => {
 
       rule.create({ report }).UnaryExpression(node);
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('ignores other unary expressions', () => {
@@ -124,7 +124,7 @@ describe('functional', () => {
       handlers.UnaryExpression({ type: 'UnaryExpression', operator: 'typeof', argument: { type: 'MemberExpression' } });
       handlers.UnaryExpression({ type: 'UnaryExpression', operator: 'delete', argument: identifier('value') });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('reports array mutators on mutable targets', () => {
@@ -144,7 +144,7 @@ describe('functional', () => {
       handlers.CallExpression(onMember);
       handlers.CallExpression(onThis);
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('ignores array mutators on fresh values and non mutating methods', () => {
@@ -155,7 +155,7 @@ describe('functional', () => {
       handlers.CallExpression(objectCall({ type: 'ArrayExpression' }, identifier('reverse'), []));
       handlers.CallExpression(objectCall(identifier('list'), identifier('map'), []));
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('reports Object mutators on existing values', () => {
@@ -165,7 +165,7 @@ describe('functional', () => {
 
       rule.create({ report }).CallExpression(node);
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('ignores Object mutators on fresh values', () => {
@@ -177,7 +177,7 @@ describe('functional', () => {
       handlers.CallExpression(objectCall(identifier('Object'), identifier('assign'), []));
       handlers.CallExpression(objectCall(identifier('Object'), identifier('keys'), [identifier('value')]));
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('ignores calls without a matching callee shape', () => {
@@ -189,7 +189,7 @@ describe('functional', () => {
       handlers.CallExpression(objectCall(identifier('list'), identifier('push'), [], true));
       handlers.CallExpression(objectCall(identifier('list'), { type: 'PrivateIdentifier' }, []));
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
   });
 
@@ -219,7 +219,7 @@ describe('functional', () => {
       handlers.ArrowFunctionExpression(wrapper);
       handlers['Program:exit']({ type: 'Program' });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('reports block bodied wrapper around function declaration', () => {
@@ -249,7 +249,7 @@ describe('functional', () => {
       handlers.FunctionExpression(wrapper);
       handlers['Program:exit']({ type: 'Program' });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('ignores declarations without usable shape', () => {
@@ -279,7 +279,7 @@ describe('functional', () => {
       handlers.ArrowFunctionExpression(wrapper);
       handlers['Program:exit']({ type: 'Program' });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('ignores wrapper around function declared multiple times', () => {
@@ -302,7 +302,7 @@ describe('functional', () => {
       handlers.ArrowFunctionExpression(wrapper);
       handlers['Program:exit']({ type: 'Program' });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('ignores wrapper around function with non plain parameters', () => {
@@ -320,7 +320,7 @@ describe('functional', () => {
       handlers.ArrowFunctionExpression(wrapper);
       handlers['Program:exit']({ type: 'Program' });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('ignores self referencing wrapper', () => {
@@ -334,7 +334,7 @@ describe('functional', () => {
       handlers.ArrowFunctionExpression(wrapper);
       handlers['Program:exit']({ type: 'Program' });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('ignores wrapper with arity mismatch against declaration', () => {
@@ -352,7 +352,7 @@ describe('functional', () => {
       handlers.ArrowFunctionExpression(wrapper);
       handlers['Program:exit']({ type: 'Program' });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('ignores wrapper around undeclared function', () => {
@@ -363,7 +363,7 @@ describe('functional', () => {
       handlers.ArrowFunctionExpression(arrow([identifier('value')], callTo('unknown', [identifier('value')])));
       handlers['Program:exit']({ type: 'Program' });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
 
     test('ignores functions which are no tacit wrappers', () => {
@@ -431,7 +431,7 @@ describe('functional', () => {
 
       handlers['Program:exit']({ type: 'Program' });
 
-      expect(reportMocks.length).toBe(0);
+      expect(reportMocks).toHaveLength(0);
     });
   });
 });
