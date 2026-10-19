@@ -33,7 +33,7 @@ Oxlint Configuration for chubbyts libraries / framework / projects. Provides the
 Through [NPM](https://www.npmjs.com) as [@chubbyts/chubbyts-oxlint][1].
 
 ```sh
-npm i -D oxlint @chubbyts/chubbyts-oxlint@^1.0.1
+npm i -D oxlint @chubbyts/chubbyts-oxlint@^1.0.2
 ```
 
 ## Configuration
