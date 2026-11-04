@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, test } from 'vitest';
 import { useFunctionMock } from '@chubbyts/chubbyts-function-mock/dist/function-mock';
-import plugin from '../src/import';
+import plugin from '../src/import.js';
 
 type Report = (descriptor: { node: unknown; message: string }) => void;
 

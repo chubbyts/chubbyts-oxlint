@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { useFunctionMock } from '@chubbyts/chubbyts-function-mock/dist/function-mock';
-import type { EsNode, RuleContext } from '../src/functional';
-import plugin from '../src/functional';
+import type { EsNode, RuleContext } from '../src/functional.js';
+import plugin from '../src/functional.js';
 
 const identifier = (name: string): EsNode => ({ type: 'Identifier', name });
 
